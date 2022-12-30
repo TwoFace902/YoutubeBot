@@ -39,7 +39,7 @@ async def queue(ctx: commands.Context, *args):
     try: queue = queues[ctx.guild.id]
     except KeyError: queue = None
     if queue == None:
-        await ctx.send('the bot isn\'t playing anything')
+        await ctx.send('dr foreskin is asleep moron')
     else:
         title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
         queue_str = ''.join(map(title_str, enumerate([i[1]["title"] for i in queue])))
@@ -49,12 +49,34 @@ async def queue(ctx: commands.Context, *args):
     if not await sense_checks(ctx):
         return
 
+@bot.command(name='remove', aliases=['r'])
+async def remove(ctx: commands.Context, *args):
+    try: queue_length = len(queues[ctx.guild.id])
+    except KeyError: queue_length = 0
+    except ValueError:
+        await ctx.send('not a number absolute mongrel')
+        return
+    if queue_length <= 0:
+        await ctx.send('nothing to remove dumbass')
+    else:
+        try: num = int(args[0])
+        except IndexError:
+            await ctx.send('Invalid index smoothbrain')
+            return
+        if num <= queue_length and num > 0:
+            toremove = queues[ctx.guild.id].pop(num)
+            kekw = 'Removing: ' + toremove[1]['title']
+            await ctx.send(kekw)
+        else:
+            await ctx.send('Invalid index smoothbrain')
+    return
+
 @bot.command(name='skip', aliases=['s'])
 async def skip(ctx: commands.Context, *args):
     try: queue_length = len(queues[ctx.guild.id])
     except KeyError: queue_length = 0
     if queue_length <= 0:
-        await ctx.send('the bot isn\'t playing anything')
+        await ctx.send('nothing to skip headass')
     if not await sense_checks(ctx):
         return
 
@@ -92,7 +114,7 @@ async def play(ctx: commands.Context, *args):
 
     # source address as 0.0.0.0 to force ipv4 because ipv6 breaks it for some reason
     # this is equivalent to --force-ipv4 (line 312 of https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/options.py)
-    await ctx.send(f'looking for `{query}`...')
+    await ctx.send(f'Looking for `{query}`...')
     with yt_dlp.YoutubeDL({'format': 'worstaudio',
                            'source_address': '0.0.0.0',
                            'default_search': 'ytsearch',
@@ -106,7 +128,7 @@ async def play(ctx: commands.Context, *args):
         if 'entries' in info:
             info = info['entries'][0]
         # send link if it was a search, otherwise send title as sending link again would clutter chat with previews
-        await ctx.send('downloading ' + (f'https://youtu.be/{info["id"]}' if will_need_search else f'`{info["title"]}`'))
+        await ctx.send('Next Up: ' + (f'https://youtu.be/{info["id"]}' if will_need_search else f'`{info["title"]}`'))
         ydl.download([query])
         
         path = f'./dl/{server_id}/{info["id"]}.{info["ext"]}'
@@ -129,7 +151,7 @@ def after_track(error, connection, server_id):
     try: path = queues[server_id].pop(0)[0]
     except KeyError: return # probably got disconnected
     if path not in [i[0] for i in queues[server_id]]: # check that the same video isn't queued multiple times
-        try: os.remove(path)
+        try: print('kekw')
         except FileNotFoundError: pass
     try: connection.play(discord.FFmpegOpusAudio(queues[server_id][0][0]), after=lambda error=None, connection=connection, server_id=server_id:
                                                                           after_track(error, connection, server_id))
