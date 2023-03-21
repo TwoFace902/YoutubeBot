@@ -6,6 +6,10 @@
     - alternate: `.s`
 - `.queue` - shows a list of titles queued for playback
     - alternate: `.q`
+- `.remove {index}` - removes object in queue at specified index
+    - alternate: `.r`
+- '.playfile` - plays the first attached file if it's audio
+    - alternate: `.f`, `.pf`
 
 ## Getting started
 Recently, some of the major Discord bots designed to play YouTube videos (Rythm and Groovy to name a few) have been taken down by Google for copyright infringment. This means that I can't just give you a bot to add to your server, but I can give you the code to run on your own bot, which you can add to your server. Don't worry, this is a pretty straightforward process.
