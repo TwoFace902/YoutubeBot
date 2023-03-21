@@ -8,7 +8,7 @@
     - alternate: `.q`
 - `.remove {index}` - removes object in queue at specified index
     - alternate: `.r`
-- '.playfile` - plays the first attached file if it's audio
+- `.playfile` - plays the first attached file if it's audio
     - alternate: `.f`, `.pf`
 
 ## Getting started
