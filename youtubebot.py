@@ -41,11 +41,15 @@ async def queue(ctx: commands.Context, *args):
     if queue == None:
         await ctx.send('dr foreskin is asleep moron')
     else:
-        title_str = lambda val: '‣ %s\n\n' % val[1] if val[0] == 0 else '**%2d:** %s\n' % val
-        queue_str = ''.join(map(title_str, enumerate([i[1]["title"] for i in queue])))
-        embedVar = discord.Embed(color=COLOR)
-        embedVar.add_field(name='Now playing:', value=queue_str)
-        await ctx.send(embed=embedVar)
+        chunk = ''
+        ct = 0
+        for elem in queue:
+            if ct == 0:
+                chunk += '**Now playing: **' + elem[1] + '\n'
+            else:
+                chunk += '**' + str(ct) + '**' + ': ' + elem[1] + '\n'
+            ct += 1
+        await ctx.send(chunk)
     if not await sense_checks(ctx):
         return
 
@@ -56,7 +60,7 @@ async def remove(ctx: commands.Context, *args):
     except ValueError:
         await ctx.send('not a number absolute mongrel')
         return
-    if queue_length <= 0:
+    if queue_length <= 1:
         await ctx.send('nothing to remove dumbass')
     else:
         try: num = int(args[0])
@@ -132,6 +136,35 @@ async def play(ctx: commands.Context, *args):
         ydl.download([query])
         
         path = f'./dl/{server_id}/{info["id"]}.{info["ext"]}'
+        try: queues[server_id].append((path, info["title"]))
+        except KeyError: # first in queue
+            queues[server_id] = [(path, info["title"])]
+            try: connection = await voice_state.channel.connect()
+            except discord.ClientException: connection = get_voice_client_from_channel_id(voice_state.channel.id)
+            connection.play(discord.FFmpegOpusAudio(path), after=lambda error=None, connection=connection, server_id=server_id:
+                                                             after_track(error, connection, server_id))
+
+@bot.command(name='playfile', aliases=['pf','f'])
+async def playfile(ctx: commands.Context, *args):
+    voice_state = ctx.author.voice
+    if not await sense_checks(ctx, voice_state=voice_state):
+        return
+    server_id = ctx.guild.id
+
+    try: file = ctx.message.attachments[0]
+    except IndexError:
+        await ctx.send('File not attached')
+        return
+    if (file.content_type != 'audio/mpeg'):
+        await ctx.send('Filetype not audio')
+        return
+    else:
+        await ctx.send('Next Up: ' + f'{file.filename}')
+        if not os.path.exists(f"./dl/{server_id}"):
+            os.makedirs(f"./dl/{server_id}")
+        path = f"./dl/{server_id}/{file.filename}"
+        info = file.filename[0:file.filename.rfind('.')]
+        await file.save(path)
         try: queues[server_id].append((path, info))
         except KeyError: # first in queue
             queues[server_id] = [(path, info)]
