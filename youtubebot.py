@@ -155,7 +155,6 @@ async def playfile(ctx: commands.Context, *args):
     except IndexError:
         await ctx.send('File not attached')
         return
-    print(file.content_type)
     if (not file.content_type.startswith('audio/')):
         await ctx.send('Filetype not audio')
         return
